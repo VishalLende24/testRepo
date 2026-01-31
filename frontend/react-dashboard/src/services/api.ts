@@ -33,6 +33,12 @@ export const ruleService = {
   
   // Update rule
   updateRule: (id: string, data: any) => api.put(`/rules/${id}`, data),
+  
+  // Delete rule
+  deleteRule: (id: string) => api.delete(`/rules/${id}`),
+  
+  // Test rule evaluation
+  testRules: (testData: any) => api.post('/rules/test', { testData }),
 };
 
 export default api;

@@ -6,6 +6,7 @@ import ApplicationsList from './pages/ApplicationsList';
 import ApplicationDetail from './pages/ApplicationDetail';
 import SubmitApplication from './pages/SubmitApplication';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminRulesManagement from './pages/AdminRulesManagement';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
@@ -32,6 +33,7 @@ function App() {
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/rules" element={<AdminRulesManagement />} />
             </Route>
           </Route>
 

@@ -29,7 +29,10 @@ const Layout: React.FC = () => {
                                 <Link to="/submit">New Application</Link>
                             )}
                             {user?.role === 'Admin' && (
-                                <Link to="/admin/dashboard">Dashboard</Link>
+                                <>
+                                    <Link to="/admin/dashboard">Dashboard</Link>
+                                    <Link to="/admin/rules">Rules Management</Link>
+                                </>
                             )}
                         </div>
 

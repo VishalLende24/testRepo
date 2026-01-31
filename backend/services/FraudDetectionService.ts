@@ -6,8 +6,10 @@ import DuplicateMatch from '../models/DuplicateMatch';
 import Rule from '../models/Rule';
 import RiskScore from '../models/RiskScore';
 import Explanation from '../models/Explanation';
+import { RuleEngine } from './RuleEngine';
 
 export class FraudDetectionService {
+  private ruleEngine = new RuleEngine();
   
   private hashAadhaar(aadhaar: string): string {
     return createHash('sha256').update(aadhaar).digest('hex');
@@ -93,43 +95,33 @@ export class FraudDetectionService {
       duplicateMatches.push(match);
     }
 
-    // Load and evaluate rules
-    const activeRules = await Rule.find({ active: true }).lean();
-    const triggeredRules = [];
+    // Evaluate rules using new rule engine
+    const enrichedData = {
+      ...applicationData,
+      aadhaarHash,
+      duplicateMatches: duplicateResults,
+      exactMatches: duplicateResults.exactMatches || [],
+      fuzzyMatches: duplicateResults.fuzzyMatches || []
+    };
 
-    for (const rule of activeRules) {
-      let triggered = false;
-      
-      if (rule.condition.type === 'exact') {
-        triggered = duplicateResults.exactMatches?.some((match: any) => match.field === rule.condition.field) || false;
-      } else if (rule.condition.type === 'fuzzy') {
-        const threshold = rule.condition.threshold || 0.8;
-        triggered = duplicateResults.fuzzyMatches?.some((match: any) => 
-          match.field === rule.condition.field && match.score >= threshold
-        ) || false;
-      }
-      
-      if (triggered) {
-        triggeredRules.push(rule);
-      }
-    }
+    const ruleEvaluation = await this.ruleEngine.evaluateRules(enrichedData);
 
     // Calculate risk score
-    const riskResult = await this.runPythonScript('risk_scoring.py', triggeredRules);
+    const riskResult = await this.runPythonScript('risk_scoring.py', ruleEvaluation.matchedRules);
     
     const riskScore = new RiskScore({
       applicationId: application._id,
-      totalScore: riskResult.totalScore,
-      normalizedScore: riskResult.normalizedScore,
-      riskBand: riskResult.riskBand,
-      triggeredRules: triggeredRules.map(r => r.ruleId)
+      totalScore: ruleEvaluation.ruleScore,
+      normalizedScore: riskResult.normalizedScore || ruleEvaluation.ruleScore,
+      riskBand: this.getRiskBand(ruleEvaluation.ruleScore),
+      triggeredRules: ruleEvaluation.matchedRules.map(r => r.ruleId)
     });
     await riskScore.save();
 
     // Generate explanations
     const explanationResults = await this.runPythonScript('explain.py', {
       duplicateMatches: duplicateResults,
-      triggeredRules: triggeredRules
+      matchedRules: ruleEvaluation.matchedRules
     });
 
     const explanation = new Explanation({
@@ -142,8 +134,15 @@ export class FraudDetectionService {
       application,
       duplicateMatches,
       riskScore,
+      ruleEvaluation,
       explanations: explanationResults
     };
+  }
+
+  private getRiskBand(score: number): string {
+    if (score <= 30) return 'LOW';
+    if (score <= 70) return 'MEDIUM';
+    return 'HIGH';
   }
 
   async getApplicationDetails(applicationId: string) {

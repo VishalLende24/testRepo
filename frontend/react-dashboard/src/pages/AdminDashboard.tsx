@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ApplicationsList from './ApplicationsList';
 
 const AdminDashboard: React.FC = () => {
@@ -7,10 +8,12 @@ const AdminDashboard: React.FC = () => {
         <div style={{ padding: '20px' }}>
             <h2>Admin Dashboard</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '20px', marginBottom: '40px' }}>
-                <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                    <h3>Rule Management</h3>
-                    <p>Configure fraud detection rules and thresholds.</p>
-                </div>
+                <Link to="/admin/rules" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}>
+                        <h3>Rule Management</h3>
+                        <p>Configure fraud detection rules and thresholds.</p>
+                    </div>
+                </Link>
                 <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     <h3>Simulators</h3>
                     <p>Test fraud scenarios and rule distinctiveness.</p>
