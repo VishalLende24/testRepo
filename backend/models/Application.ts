@@ -7,6 +7,7 @@ export interface IApplication extends Document {
   aadhaarHash: string;
   address: string;
   jobId: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,7 +18,9 @@ const ApplicationSchema: Schema = new Schema({
   phone: { type: String, required: true },
   aadhaarHash: { type: String, required: true },
   address: { type: String, required: true },
-  jobId: { type: String, required: true }
+  jobId: { type: String, required: true },
+  status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
+  
 }, {
   timestamps: true
 });

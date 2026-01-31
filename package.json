@@ -1,0 +1,20 @@
+{
+  "name": "fraud-detection-app",
+  "version": "1.0.0",
+  "description": "Monolithic fraud detection system",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npx ts-node server.ts",
+    "client": "cd frontend/react-dashboard && npm start",
+    "build": "cd backend && npx tsc && cd ../frontend/react-dashboard && npm run build",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend/react-dashboard && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "devDependencies": {},
+  "keywords": ["fraud-detection", "mongodb", "react", "node"],
+  "author": "",
+  "license": "MIT"
+}
