@@ -76,7 +76,7 @@ router.post('/rules', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating rule:', error);
-    if (error.code === 11000) {
+    if (error && typeof error === 'object' && 'code' in error && (error as any).code === 11000) {
       return res.status(400).json({ error: 'Rule ID already exists' });
     }
     res.status(500).json({ error: 'Internal server error' });

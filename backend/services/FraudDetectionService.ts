@@ -88,9 +88,9 @@ export class FraudDetectionService {
       }
 
       // Save duplicate matches
-      const duplicateMatches = [];
-      const exactMatches = duplicateResults.exactMatches || [];
-      for (const exactMatch of exactMatches as any[]) {
+      const duplicateMatches: any[] = [];
+      const exactMatches = (duplicateResults.exactMatches || []) as any[];
+      for (const exactMatch of exactMatches) {
         const match = new DuplicateMatch({
           applicationId: application._id,
           matchedApplicationId: exactMatch.applicationId,
@@ -102,8 +102,8 @@ export class FraudDetectionService {
         duplicateMatches.push(match);
       }
 
-      const fuzzyMatches = duplicateResults.fuzzyMatches || [];
-      for (const fuzzyMatch of fuzzyMatches as any[]) {
+      const fuzzyMatches = (duplicateResults.fuzzyMatches || []) as any[];
+      for (const fuzzyMatch of fuzzyMatches) {
         const match = new DuplicateMatch({
           applicationId: application._id,
           matchedApplicationId: fuzzyMatch.applicationId,

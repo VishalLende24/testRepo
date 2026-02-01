@@ -9,6 +9,12 @@ interface Application {
   address: string;
   createdAt: string;
   status: 'PENDING' | 'APPROVE' | 'REJECT';
+  application?: {
+    fullName: string;
+    phone: string;
+    address: string;
+    createdAt: string;
+  };
   riskScore?: {
     normalizedScore: number;
     riskBand: string;
@@ -90,14 +96,14 @@ const ApplicationsList: React.FC<ApplicationsListProps> = ({ statusFilter }) => 
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 10px 0' }}>{app.fullName}</h3>
-                  <p style={{ margin: '5px 0', color: '#666' }}>Phone: {app.phone}</p>
-                  <p style={{ margin: '5px 0', color: '#666' }}>Address: {app.address}</p>
+                  <h3 style={{ margin: '0 0 10px 0' }}>{app.application?.fullName || app.fullName}</h3>
+                  <p style={{ margin: '5px 0', color: '#666' }}>Phone: {app.application?.phone || app.phone || 'N/A'}</p>
+                  <p style={{ margin: '5px 0', color: '#666' }}>Address: {app.application?.address || app.address || 'N/A'}</p>
                   <p style={{ margin: '5px 0', fontWeight: 'bold', color: app.status === 'APPROVE' ? 'green' : app.status === 'REJECT' ? 'red' : 'orange' }}>
                     Status: {app.status || 'PENDING'}
                   </p>
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    Submitted: {new Date(app.createdAt).toLocaleDateString()}
+                    Submitted: {new Date(app.application?.createdAt || app.createdAt).toLocaleDateString()}
                   </p>
                 </div>
 
