@@ -12,6 +12,7 @@ const SubmitApplication: React.FC = () => {
     address: '',
     jobId: ''
   });
+  const [resume, setResume] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,16 +21,20 @@ const SubmitApplication: React.FC = () => {
     setLoading(true);
     setError('');
 
-    // Log the data being sent
-    console.log('Submitting application with data:', formData);
+    const submitData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      submitData.append(key, value);
+    });
+    if (resume) {
+      submitData.append('resume', resume);
+    }
 
     try {
-      const response = await applicationService.submitApplication(formData);
+      const response = await applicationService.submitApplication(submitData);
       console.log('Application submitted successfully:', response.data);
       navigate('/');
     } catch (err: any) {
       console.error('Submission error:', err);
-      console.error('Error response:', err.response);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to submit application';
       setError(errorMessage);
     } finally {
@@ -132,6 +137,16 @@ const SubmitApplication: React.FC = () => {
             <option value="UX-001">UX Designer</option>
             <option value="MKT-001">Marketing Manager</option>
           </select>
+        </div>
+
+        <div>
+          <label>Resume (PDF):</label>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setResume(e.target.files?.[0] || null)}
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
         </div>
 
         <button

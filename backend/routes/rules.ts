@@ -1,9 +1,11 @@
 import express from 'express';
 import Rule from '../models/Rule';
 import { RuleEngine } from '../services/RuleEngine';
+import { GenAIRuleGenerator } from '../services/GenAIRuleGenerator';
 
 const router = express.Router();
 const ruleEngine = new RuleEngine();
+const genAI = new GenAIRuleGenerator();
 
 // GET /rules - Get all rules
 router.get('/rules', async (req, res) => {
@@ -22,13 +24,41 @@ router.get('/rules', async (req, res) => {
 // POST /rules - Create new rule
 router.post('/rules', async (req, res) => {
   try {
-    const ruleData = {
-      ...req.body,
-      ruleId: req.body.ruleId || `RULE_${Date.now()}`,
-      version: 1
-    };
+    let ruleData = req.body;
     
-    const rule = new Rule(ruleData);
+    // If admin intent provided, generate rule using GenAI
+    if (req.body.adminIntent) {
+      ruleData = genAI.generateRule(req.body.adminIntent);
+      console.log('Generated rule data:', JSON.stringify(ruleData, null, 2));
+    } else {
+      ruleData = {
+        ...req.body,
+        ruleId: req.body.ruleId || `RULE_${Date.now()}`,
+        version: 1
+      };
+    }
+    
+    // Validate rule before saving
+    const validation = genAI.validateRule(ruleData);
+    if (!validation.valid) {
+      return res.status(400).json({ 
+        error: 'Invalid rule', 
+        details: validation.errors 
+      });
+    }
+    
+    const rule = new Rule({
+      ruleId: ruleData.ruleId,
+      name: ruleData.name,
+      description: ruleData.description,
+      conditions: ruleData.conditions,
+      logic: ruleData.logic,
+      score: ruleData.score,
+      priority: ruleData.priority,
+      isActive: ruleData.isActive,
+      version: ruleData.version,
+      createdBy: ruleData.createdBy
+    });
     await rule.save();
     
     res.status(201).json({

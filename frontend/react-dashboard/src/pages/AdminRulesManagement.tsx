@@ -28,6 +28,8 @@ const AdminRulesManagement: React.FC = () => {
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [testData, setTestData] = useState('');
+  const [showAIForm, setShowAIForm] = useState(false);
+  const [aiIntent, setAiIntent] = useState('');
   const [testResult, setTestResult] = useState<any>(null);
 
   const defaultRule: Rule = {
@@ -90,6 +92,18 @@ const AdminRulesManagement: React.FC = () => {
       console.error('Error saving rule:', error);
       console.error('Error details:', error.response?.data);
       alert(`Error saving rule: ${error.response?.data?.error || error.message}`);
+    }
+  };
+
+  const handleGenerateAIRule = async () => {
+    try {
+      const response = await ruleService.createRule({ adminIntent: aiIntent });
+      fetchRules();
+      setShowAIForm(false);
+      setAiIntent('');
+    } catch (error: any) {
+      console.error('Error generating AI rule:', error);
+      alert(`Error: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -279,10 +293,35 @@ const AdminRulesManagement: React.FC = () => {
     <div className="admin-rules-management">
       <div className="header">
         <h2>Fraud Detection Rules Management</h2>
-        <button onClick={() => { setEditingRule(defaultRule); setShowForm(true); }}>
-          Create New Rule
-        </button>
+        <div>
+          <button onClick={() => { setEditingRule(defaultRule); setShowForm(true); }}>
+            Create New Rule
+          </button>
+          <button onClick={() => setShowAIForm(true)} style={{marginLeft: '10px', background: '#28a745'}}>
+            Generate with AI
+          </button>
+        </div>
       </div>
+
+      {showAIForm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Generate Rule with AI</h3>
+            <p>Describe what you want to detect:</p>
+            <textarea
+              value={aiIntent}
+              onChange={(e) => setAiIntent(e.target.value)}
+              placeholder="Examples:\n- Flag duplicate emails\n- Detect suspicious email patterns\n- Find similar names\n- Check low ATS scores"
+              rows={4}
+              style={{width: '100%', marginBottom: '15px'}}
+            />
+            <div className="form-actions">
+              <button onClick={handleGenerateAIRule}>Generate Rule</button>
+              <button onClick={() => { setShowAIForm(false); setAiIntent(''); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="modal-overlay">

@@ -1,14 +1,23 @@
-import express from "express";
+import express, { Request } from "express";
+import multer from "multer";
 import { FraudDetectionService } from "../services/FraudDetectionService";
 import Application from "../models/Application";
 import RiskScore from "../models/RiskScore";
 import OfficerAction from "../models/OfficerAction";
+import { extractTextFromPDF } from "../utils/pdfExtractor";
+import { parseResume } from "../../ats-parser";
+
+interface MulterRequest extends Request {
+  file?: any;
+}
 
 const router = express.Router();
 const fraudService = new FraudDetectionService();
 
+const upload = multer({ storage: multer.memoryStorage() });
+
 // POST /applications - Submit new application
-router.post("/applications", async (req, res) => {
+router.post("/applications", upload.single('resume'), async (req: MulterRequest, res) => {
   try {
     debugger;
     const { fullName, email, phone, aadhaar, address, jobId } = req.body;
@@ -18,6 +27,22 @@ router.post("/applications", async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    let resumeText = '';
+    let atsScore = 0;
+    let roleRelevanceScore = 0;
+
+    // Process resume if uploaded
+    if (req.file) {
+      try {
+        resumeText = await extractTextFromPDF(req.file.buffer);
+        const atsResult = parseResume(resumeText, jobId);
+        atsScore = atsResult.atsScore;
+        roleRelevanceScore = atsResult.roleRelevanceScore;
+      } catch (error) {
+        console.error('Resume processing error:', error);
+      }
+    }
+
     const result = await fraudService.processApplication({
       fullName,
       email,
@@ -25,6 +50,9 @@ router.post("/applications", async (req, res) => {
       aadhaar,
       address,
       jobId,
+      resumeText,
+      atsScore,
+      roleRelevanceScore
     });
 
     res.status(201).json({

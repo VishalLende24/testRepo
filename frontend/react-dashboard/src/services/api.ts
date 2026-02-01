@@ -4,9 +4,6 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export const applicationService = {
@@ -17,7 +14,12 @@ export const applicationService = {
   getApplicationDetails: (id: string) => api.get(`/applications/${id}`),
   
   // Submit new application
-  submitApplication: (data: any) => api.post('/applications', data),
+  submitApplication: (data: any) => {
+    const config = data instanceof FormData 
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : {};
+    return api.post('/applications', data, config);
+  },
   
   // Officer action
   submitAction: (id: string, action: string, officerId: string, notes?: string) =>

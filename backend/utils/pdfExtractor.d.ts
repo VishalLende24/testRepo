@@ -1,0 +1,1 @@
+export function extractTextFromPDF(buffer: Buffer): Promise<string>;

@@ -6,6 +6,7 @@ import { connectDB } from './config/database';
 import applicationRoutes from './routes/applications';
 import ruleRoutes from './routes/rules';
 import { seedRules } from './seeders/ruleSeeder';
+import { seedATSRules } from './seeders/atsRuleSeeder';
 
 // Load .env from root directory
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -31,6 +32,7 @@ async function startServer() {
   try {
     await connectDB();
     await seedRules();
+    await seedATSRules();
     
     app.listen(PORT, () => {
       console.log(`Fraud Detection Server running on port ${PORT}`);

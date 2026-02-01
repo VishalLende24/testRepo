@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IOfficerAction extends Document {
   applicationId: string;
-  action: 'APPROVE' | 'REJECT';
+  action: 'APPROVE' | 'REJECT' | 'PENDING';
   officerId: string;
   notes?: string;
   createdAt: Date;
@@ -10,7 +10,7 @@ export interface IOfficerAction extends Document {
 
 const OfficerActionSchema: Schema = new Schema({
   applicationId: { type: Schema.Types.ObjectId, ref: 'Application', required: true },
-  action: { type: String, enum: ['APPROVE', 'REJECT'], required: true },
+  action: { type: String, enum: ['APPROVE', 'REJECT', 'PENDING'], required: true },
   officerId: { type: String, required: true },
   notes: { type: String }
 }, {
