@@ -89,7 +89,8 @@ export class FraudDetectionService {
 
       // Save duplicate matches
       const duplicateMatches = [];
-      for (const exactMatch of duplicateResults.exactMatches || []) {
+      const exactMatches = duplicateResults.exactMatches || [];
+      for (const exactMatch of exactMatches as any[]) {
         const match = new DuplicateMatch({
           applicationId: application._id,
           matchedApplicationId: exactMatch.applicationId,
@@ -101,7 +102,8 @@ export class FraudDetectionService {
         duplicateMatches.push(match);
       }
 
-      for (const fuzzyMatch of duplicateResults.fuzzyMatches || []) {
+      const fuzzyMatches = duplicateResults.fuzzyMatches || [];
+      for (const fuzzyMatch of fuzzyMatches as any[]) {
         const match = new DuplicateMatch({
           applicationId: application._id,
           matchedApplicationId: fuzzyMatch.applicationId,
@@ -119,7 +121,9 @@ export class FraudDetectionService {
         aadhaarHash,
         duplicateEmailCount: duplicateMatches.filter(m => m.field === 'email').length,
         duplicatePhoneCount: duplicateMatches.filter(m => m.field === 'phone').length,
-        nameSimilarityScore: Math.max(...duplicateMatches.filter(m => m.field === 'fullName').map(m => m.score), 0),
+        nameSimilarityScore: duplicateMatches.filter(m => m.field === 'fullName').length > 0 
+          ? Math.max(...duplicateMatches.filter(m => m.field === 'fullName').map(m => m.score || 0)) 
+          : 0,
         atsScore: applicationData.atsScore || 0,
         roleRelevanceScore: applicationData.roleRelevanceScore || 0,
         duplicateMatches: duplicateResults,

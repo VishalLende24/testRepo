@@ -38,9 +38,16 @@ router.post('/rules', async (req, res) => {
       };
     }
     
+    // Check for duplicate ruleId
+    const existingRule = await Rule.findOne({ ruleId: ruleData.ruleId });
+    if (existingRule) {
+      ruleData.ruleId = `${ruleData.ruleId}_${Date.now()}`;
+    }
+    
     // Validate rule before saving
     const validation = genAI.validateRule(ruleData);
     if (!validation.valid) {
+      console.error('Rule validation failed:', validation.errors);
       return res.status(400).json({ 
         error: 'Invalid rule', 
         details: validation.errors 
@@ -59,14 +66,19 @@ router.post('/rules', async (req, res) => {
       version: ruleData.version,
       createdBy: ruleData.createdBy
     });
-    await rule.save();
+    
+    const savedRule = await rule.save();
+    console.log('Rule saved successfully:', savedRule.ruleId);
     
     res.status(201).json({
       success: true,
-      data: rule
+      data: savedRule
     });
   } catch (error) {
     console.error('Error creating rule:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Rule ID already exists' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
